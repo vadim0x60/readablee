@@ -3,8 +3,16 @@ import os
 import scipy.io.wavfile
 from vokaturi_api import Vokaturi
 
+
 def create_vokaturi():
 	Vokaturi.load("vokaturi_api/OpenVokaturi-3-0-linux64.so")		
+	emo_map = {
+		'neutrality': '',
+		'sadness': '😒',
+		'happiness': '😊',
+		'fear': '😨',
+		'anger': '😡',
+		}
 		
 	def voice2emotions(path2ogg):
 		"""
@@ -30,9 +38,23 @@ def create_vokaturi():
 
 		response = None
 		if quality.valid:
-			response = emotionProbabilities
+			response = {
+				'neutrality': probs.neutrality,
+				'sadness': probs.sadness,
+				'happiness': probs.happiness,
+				'fear': probs.fear,
+				'anger': probs.anger
+				}
 		voice.destroy()
 		os.system('rm ' + wavpath)
 		return response
 
-	return voice2emotions
+	def emotions2emoji(probs):
+		# neutrality_boundary = 0.2
+		emotion = max(probs.items(), key=lambda x: x[1])[0]
+		return emo_map[emotion]
+
+	def voice2emoji(path2ogg):
+		return emotions2emoji(voice2emotions(path2ogg))
+
+	return voice2emoji
