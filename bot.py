@@ -1,10 +1,11 @@
+
 import config
 import requests
 import uuid
 from flask import Flask, request
 import io
 import os
-import scipy
+import scipy.io.wavfile
 
 from google.cloud import speech
 from google.cloud.speech import enums
@@ -14,21 +15,21 @@ from google.cloud.speech import types
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'iam.json'
 client = speech.SpeechClient()
 
-def fetch_wav(filename='a.wav'):
-    os.system(f'wget -O {filename} {url}')
-    ogg_filename = path2ogg.replace('wav', 'ogg')
-    os.system('ffmpeg -i {0} {1}'.format(ogg_filename, filename))
+def fetch_wav(url, filename='a.wav'):
+    ogg_filename = filename.replace('wav', 'ogg')
+    os.system(f'wget -O {ogg_filename} {url}')
+    os.system('ffmpeg -y -i {0} {1}'.format(ogg_filename, filename))
     
 def transcribe(wavpath='a.wav'):
     # Loads the audio into memory
     sample_rate, samples = scipy.io.wavfile.read(wavpath)
-    print(samples.mean(axis=1))
-    audio = types.RecognitionAudio(content=samples.mean(axis=1))
+    with open(wavpath, 'rb') as f:
+        audio = types.RecognitionAudio(content=f.read())
 
     audio_config = types.RecognitionConfig(
         encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
         sample_rate_hertz=sample_rate,
-        language_code='ru-RU')
+        language_code='en-US')
         
     # Detects speech in the audio file
     response = client.recognize(audio_config, audio)
@@ -50,9 +51,9 @@ def handle_msg(message):
                 print(vk('messages.send', user_id=message['from_id'], 
                                           message=transcribe(), 
                                           random_id=uuid.uuid4().int))
-
-    for fwd in message['fwd_messages']:
-        handle_msg(fwd)
+    if 'fwd_messages' in message:
+        for fwd in message['fwd_messages']:
+            handle_msg(fwd)
             
 app = Flask(__name__)
 
