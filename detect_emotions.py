@@ -14,13 +14,12 @@ def create_vokaturi():
 		'anger': '😡',
 		}
 		
-	def voice2emotions(path2ogg):
+	def voice2emotions(wavpath):
 		"""
 		Takes path to ogg file. Returns object with attributes:
 		neutrality, happiness, sadness, anger, fear and their probability.
 		"""
-		wavpath = path2ogg.replace('ogg', 'wav')
-		os.system('ffmpeg -i {0} {1}'.format(path2ogg, wavpath))
+		
 		sample_rate, samples = scipy.io.wavfile.read(wavpath)
 		buffer_length = len(samples)
 		c_buffer = Vokaturi.SampleArrayC(buffer_length)
@@ -49,7 +48,9 @@ def create_vokaturi():
 		return response
 
 	def emotions2emoji(probs):
-		# neutrality_boundary = 0.2
+		neutrality_boundary = 0.9
+		if probs['neutrality'] > neutrality_boundary:
+		    return ''
 		emotion = max(probs.items(), key=lambda x: -x[1])[0]
 		return emo_map[emotion]
 
