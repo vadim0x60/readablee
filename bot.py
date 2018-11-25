@@ -21,10 +21,10 @@ def fetch_wav(filename='a.wav'):
     
 def transcribe(wavpath='a.wav'):
     # Loads the audio into memory
-	sample_rate, samples = scipy.io.wavfile.read(wavpath)
-	print(samples.mean(axis=1))
-	audio = types.RecognitionAudio(content=samples.mean(axis=1))
-	
+    sample_rate, samples = scipy.io.wavfile.read(wavpath)
+    print(samples.mean(axis=1))
+    audio = types.RecognitionAudio(content=samples.mean(axis=1))
+
     audio_config = types.RecognitionConfig(
         encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
         sample_rate_hertz=sample_rate,
