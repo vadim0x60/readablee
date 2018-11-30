@@ -63,9 +63,12 @@ def handle_msg(message):
             if attachment['type'] == 'audio_message':
                 fetch_wav(attachment['audio_message']['link_ogg'])
                 t = summarize_sentences(transcribe()) + ' ' + voice2emoji('a.wav')
-                print(vk('messages.send', peer_id=message['peer_id'], 
-                                          message=t, 
-                                          random_id=uuid.uuid4().int))
+                if 'peer_id' in message and message['peer_id'] != 0:
+                    print(vk('messages.send', peer_id=message['peer_id'], 
+                                              message=t, 
+                                              random_id=uuid.uuid4().int))
+                else:
+                    print(vk('messages.send', user_id=message['from_id'], message=t, random_id=uuid.uuid4().int))
     if 'fwd_messages' in message:
         for fwd in message['fwd_messages']:
             handle_msg(fwd)
